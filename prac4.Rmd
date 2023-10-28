@@ -1,6 +1,66 @@
 ---
-title: "prac"
+title: "prac4"
 output: html_document
-date: "2023-10-25"
+date: "2023-10-26"
 ---
+
+```{r}
+library(here)
+library(readr)
+library(sf)
+library(tidyverse)
+library(janitor)
+```
+#导入文件
+```{r}
+origin_csv<- read.csv("prac_4/global_gender_inequality.csv", 
+                         header = TRUE, 
+                         sep = ",",  
+                         encoding = "latin1")
+```
+#导入地图
+```{r}
+world_map <- st_read(here::here("prac_4",
+                                "World_Countries_Generalized",
+                                "World_Countries_Generalized.shp"))
+```
+
+
+
+
+#处理数据保留gi的列
+```{r}
+library(dplyr)
+origin_gii<-select(origin_csv,country,gii_1990:gii_2021)
+```
+#把地图名字改了
+```{r}
+world_map1<-world_map%>%
+  clean_names()
+```
+#显示地图
+```{r}
+library(tmap)
+qtm(world_map1)
+```
+#添加一个数据列 算出他们的diff
+```{r}
+origin_gii1<-origin_gii%>%
+  mutate(diff=gii_2019-gii_2010)
+```
+
+#合并数据与地图
+```{r}
+world_mapcombined<-world_map1%>%
+  left_join(.,
+            select(origin_gii1,diff,country),
+            by = c("country" = "country"))
+```
+#打印地图 （用颜色来代表改变）
+```{r}
+library(tmaptools)
+tmap_mode("plot")
+qtm(world_mapcombined,
+    fill = "diff")
+```
 
